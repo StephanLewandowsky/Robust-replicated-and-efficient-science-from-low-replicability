@@ -18,7 +18,7 @@ while parms.pHack && (abs(z) < 2) && (ph < parms.pHackBatches)  %if we (have to)
     data = [data randn(1,parms.pHack)*parms.sampleSD+trueEffect]; %#ok<AGROW>
     n = n + parms.pHack;
     z = mean(data)/(std(data)/sqrt(n));
-    bf = t1smpbf(z,parms.sampleSize);
+    bf = t1smpbf(z,n);
     ph = ph + 1;
 end
 
@@ -26,8 +26,11 @@ expResults.iv1val = iv1;
 expResults.iv2val = iv2;
 expResults.z = z;
 expResults.bf = bf;
-expResults.sigResult = abs(z)> parms.critval;
-expResults.BFResult = bf > parms.bfcritval;
+if parms.bayesian
+    expResults.sigResult = bf > parms.bfcritval;
+else
+    expResults.sigResult = abs(z)> parms.critval;
+end
 expResults.trueEffect = trueEffect;
 expResults.finalSample = n;
 expResults.finalBatches = ph;

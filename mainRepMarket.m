@@ -5,7 +5,7 @@ global outcomeSpace;
 
 %% ========== get the citations of 2,000 articles in psychology from 2014 and create output path
 load 'psychcites2014.dat'
-resultsPathName = 'standResults';
+resultsPathName = 'BayesianResults';
 if ~exist(['output/' resultsPathName],'dir')
     mkdir ('output', resultsPathName) %make sure all output goes into dedicated directory
 end
@@ -39,20 +39,22 @@ fixedps.nExploreLevels = 10;   %number of levels in bivariate exploration space
 fidexps.pH1true = .09;         %Dreber15 estimate = .09. If set to zero: 'bemscape'
 fixedps.nExperiments = 100;
 fixedps.decBnd = decisionBound;
-fixedps.nPerCond = 10;        %number of replications per condition of simulation
+fixedps.nPerCond = 1000;        %number of replications per condition of simulation
 
 %% ========== structure of free (flex) parameters to govern behavior of simulation
 % anything initialized to nan here is set below in experimental-condition
 % loop
 flexps.sampleSize = 30;       %n subjects in each experiment before p-hacking
 flexps.sampleSD = 2;          %standard deviation of population
-flexps.pHack = nan;            %if 0, no p-hack. Otherwise, add batch of n subjects until significant
+flexps.pHack = nan;           %if 0, no p-hack. Otherwise, add batch of n subjects until significant
 flexps.pHackBatches = 5;      %number of times p-hacking can occur
 flexps.decisionGain = nan;    %gain for replication decision. gain=0 means always replicate
 flexps.interestGain = 5;      %if replic-gain=0, then use this gain to decide if interesting
 flexps.fakeit = 0;            %if 1, then pretend everything is significant
-flexps.critval = 2;           %use 2 for .05, 2.58 for .01, 3.29 for .001
+flexps.critval = 2.;          %use 2 for .05, 2.58 for .01, 3.29 for .001
 flexps.bfcritval = 3;         %use 3 for moderate, 10 for strong, 30 for very strong, 100 for decisive
+                              % BF=3 roughly p=.05; http://imaging.mrc-cbu.cam.ac.uk/statswiki/FAQ/RscaleBayes
+flexps.bayesian = 1;          %if 1 then Bayesian t-test and 'bfcritval' will be used, otherwise normal t-test and 'critval'
 
 %% ========== run replication market experiment
 resultsSim = zeros(16, 10);
@@ -110,7 +112,7 @@ p05=refline([0 .05]);
 p05.Color='black';
 p05.LineStyle='--';
 p05.Marker='none';
-axis([-.5,10.5,0,.3])
+axis([-.5,10.5,0,.5])
 legend('Type I','Type II');
 xlabel('p-Hacking (batch size)');
 ylabel('Type I/II error rate');
@@ -171,6 +173,25 @@ for g = [0 1 10]
 
 end
 
-%save results in .csv format
-writetable(tx,['output/' resultsPathName '/' resultsPathName 'N' num2str(fixedps.nPerCond) '.csv' ])
+%save results in Excel, with results and parameters in different sheets
+ofn = ['output/' resultsPathName '/' resultsPathName 'N' num2str(fixedps.nPerCond) '.xlsx' ];
+if exist(ofn,'file')
+     apn = 1;
+     while ~movefile(ofn,['output/' resultsPathName '/' resultsPathName 'N' num2str(fixedps.nPerCond) '_' num2str(apn) '.xlsx' ]);
+        apn=apn+1;
+     end
+end
+writetable(tx,ofn,'Sheet','results')
+writetable(struct2table(flexps),ofn,'Sheet','parameters')
 
+%now clean up the default sheets 1-3 that we do not need
+newExcel = actxserver('Excel.Application');
+newExcel.DisplayAlerts = false;
+excelWB = newExcel.Workbooks.Open(fullfile(pwd,ofn));
+excelWB.Sheets.Item(1).Delete; %sheets 'move over' after deletion, so it's always the 1st to be deleted
+excelWB.Sheets.Item(1).Delete;
+excelWB.Sheets.Item(1).Delete;
+excelWB.Save();
+excelWB.Close();
+newExcel.Quit();
+delete(newExcel);
