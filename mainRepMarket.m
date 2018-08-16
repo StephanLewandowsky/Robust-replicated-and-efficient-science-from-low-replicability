@@ -1,17 +1,17 @@
-%replication market, first attemp April 2018 -- written by Stephan Lewandowsky
+%replication market, August 2018 -- written by Stephan Lewandowsky
 close all                     %close all figures
 clearvars                     %get rid of variables from before
 global outcomeSpace;
 
-%% ========== get the citations of 2,000 articles in psychology from 2014
+%% ========== get the citations of 2,000 articles in psychology from 2014 and create output path
 load 'psychcites2014.dat'
-resultsPathName = 'fakeResults';
+resultsPathName = 'standResults';
 if ~exist(['output/' resultsPathName],'dir')
     mkdir ('output', resultsPathName) %make sure all output goes into dedicated directory
 end
 printflag=1;   %if set to 1, then figures are printed to pdf
 
-%  ==========draw illustrative figure of citation distribution, pareto fit, and
+%%  ==========draw illustrative figure of citation distribution, pareto fit, and
 % decision bound centered on 90th percentile
 h2=histfit(psychcites2014,30,'gp');
 yt = get(gca, 'YTick');
@@ -48,9 +48,11 @@ flexps.sampleSize = 30;       %n subjects in each experiment before p-hacking
 flexps.sampleSD = 2;          %standard deviation of population
 flexps.pHack = nan;            %if 0, no p-hack. Otherwise, add batch of n subjects until significant
 flexps.pHackBatches = 5;      %number of times p-hacking can occur
-flexps.decisionGain = nan;     %gain for replication decision. gain=0 means always replicate
+flexps.decisionGain = nan;    %gain for replication decision. gain=0 means always replicate
 flexps.interestGain = 5;      %if replic-gain=0, then use this gain to decide if interesting
-flexps.fakeit = 1;            %if 1, then pretend everything is significant
+flexps.fakeit = 0;            %if 1, then pretend everything is significant
+flexps.critval = 2;           %use 2 for .05, 2.58 for .01, 3.29 for .001
+flexps.bfcritval = 3;         %use 3 for moderate, 10 for strong, 30 for very strong, 100 for decisive
 
 %% ========== run replication market experiment
 resultsSim = zeros(16, 10);
