@@ -1,11 +1,11 @@
 %replication market, August 2018 -- written by Stephan Lewandowsky
 close all                     %close all figures
 clearvars                     %get rid of variables from before
-global outcomeSpace;
+global outcomeSpace theoryCentroid;
 
 %% ========== get the citations of 2,000 articles in psychology from 2014 and create output path
 load 'psychcites2014.dat'
-resultsPathName = 'BayesianResults';
+resultsPathName = 'TheoryDrivBayes';
 if ~exist(['output/' resultsPathName],'dir')
     mkdir ('output', resultsPathName) %make sure all output goes into dedicated directory
 end
@@ -51,10 +51,14 @@ flexps.pHackBatches = 5;      %number of times p-hacking can occur
 flexps.decisionGain = nan;    %gain for replication decision. gain=0 means always replicate
 flexps.interestGain = 5;      %if replic-gain=0, then use this gain to decide if interesting
 flexps.fakeit = 0;            %if 1, then pretend everything is significant
-flexps.critval = 2.;          %use 2 for .05, 2.58 for .01, 3.29 for .001
+flexps.critval = 2.;          %z value: use 2 for .05, 2.58 for .01, 3.29 for .001
 flexps.bfcritval = 3;         %use 3 for moderate, 10 for strong, 30 for very strong, 100 for decisive
                               % BF=3 roughly p=.05; http://imaging.mrc-cbu.cam.ac.uk/statswiki/FAQ/RscaleBayes
-flexps.bayesian = 1;          %if 1 then Bayesian t-test and 'bfcritval' will be used, otherwise normal t-test and 'critval'
+flexps.bayesian = 1;          %if 1 then Bayesian t-test and 'bfcritval' will be used, otherwise normal z-test and 'critval'
+flexps.theory = .5;            %if >0, then there is structure in the world, and this value determines overlap between
+                              %theory and the world. If set to 1, theory is perfect.
+                              %If near zero, the theory is grazing in the
+                              %wrong space
 
 %% ========== run replication market experiment
 resultsSim = zeros(16, 10);
@@ -62,7 +66,7 @@ avgNTrueResults = 0;
 k=0;
 for fph = [0,1,5,10]
     flexps.pHack = fph;
-    for fpg = [0 1 5 10]
+    for fpg = [1 5 10]
         flexps.decisionGain = fpg;
         k=k+1;
         
@@ -71,9 +75,24 @@ for fph = [0,1,5,10]
         for i=1:fixedps.nPerCond
             %a new 2D space of variables worthy of exploration, with some random locations
             %that have a "true" effect.
-            outcomeSpace = rand(fixedps.nExploreLevels) < fidexps.pH1true;
+            if flexps.theory > 0
+                outcomeSpace = zeros(fixedps.nExploreLevels);
+                centroid = [randi([3 fixedps.nExploreLevels-2]) randi([3 fixedps.nExploreLevels-2])];
+                neff = ceil(fidexps.pH1true*fixedps.nExploreLevels^2) + 1;
+                for j=1:neff
+                    xvaleffs(j) = randi([centroid(1)-1 centroid(1)+2]); %#ok<SAGROW>
+                    yvaleffs(j) = randi([centroid(2)-1 centroid(2)+2]); %#ok<SAGROW>
+                    outcomeSpace(xvaleffs(j),yvaleffs(j))= 1;
+                end
+                distort = round((1-flexps.theory)*9);
+                theoryCentroid = [randi([max(centroid(1)-distort,1) min(centroid(1)+distort,fixedps.nExploreLevels)]) ...
+                                  randi([max(centroid(2)-distort,1) min(centroid(2)+distort,fixedps.nExploreLevels)])];
+            else
+                outcomeSpace = rand(fixedps.nExploreLevels) < fidexps.pH1true;
+                theoryCentroid = nan;
+            end
             avgNTrueResults = avgNTrueResults + sum(sum(outcomeSpace));
-            simResults (i) = runRepMarket(fixedps,flexps,gpParms); %#ok<SAGROW>
+            simResults (i) = runRepMarket(fixedps,flexps,gpParms,i==fixedps.nPerCond); %#ok<SAGROW>
         end
         
         %print results for that cell
@@ -121,7 +140,7 @@ if printflag, print('phackEffects','-dpdf'); end
 
 
 %% plot results for selected values of gain
-for g = [0 1 10]
+for g = [1 10]
     g5 = tx((tx.gain==g),:);
     ul = max(g5.nTotExptsPrivRep+2);
     ll = min([95, (g5.nTotExptsPubRep-2)']);
@@ -143,7 +162,7 @@ for g = [0 1 10]
     legend('Private replication','Public replication','Location','east')
     hold off
     if printflag, print(['output/' resultsPathName '/expNum_g' num2str(g)],'-dpdf', '-bestfit'); end
-   
+    
     
     figure
     hold on
@@ -160,7 +179,7 @@ for g = [0 1 10]
     plot(g5.phack,g5.nPrivRealInterestEffs,'r--o','MarkerFaceColor','red')
     plot(g5.phack,g5.nPubRealInterestEffs,'b--o','MarkerFaceColor',[0.5843    0.8157    0.9882])
     title(['g=' num2str(g)])
-    p100=refline([0 fidexps.pH1true*100]);
+    p100=refline([0 avgNTrueResults / (k*fixedps.nPerCond)]);
     p100.Color='black';
     p100.LineStyle='--';
     p100.Marker='none';
@@ -170,16 +189,16 @@ for g = [0 1 10]
         'Interesting effects public replication',...
         'Location','east')
     if printflag, print(['output/' resultsPathName '/discoveryNum_g' num2str(g)],'-dpdf', '-bestfit' ); end
-
+    
 end
 
 %save results in Excel, with results and parameters in different sheets
 ofn = ['output/' resultsPathName '/' resultsPathName 'N' num2str(fixedps.nPerCond) '.xlsx' ];
 if exist(ofn,'file')
-     apn = 1;
-     while ~movefile(ofn,['output/' resultsPathName '/' resultsPathName 'N' num2str(fixedps.nPerCond) '_' num2str(apn) '.xlsx' ]);
+    apn = 1;
+    while ~movefile(ofn,['output/' resultsPathName '/' resultsPathName 'N' num2str(fixedps.nPerCond) '_' num2str(apn) '.xlsx' ]);
         apn=apn+1;
-     end
+    end
 end
 writetable(tx,ofn,'Sheet','results')
 writetable(struct2table(flexps),ofn,'Sheet','parameters')

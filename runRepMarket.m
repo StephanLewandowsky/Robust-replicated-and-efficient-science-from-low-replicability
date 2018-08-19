@@ -1,4 +1,5 @@
-function simResults = runRepMarket(fixedps,flexps,gpParms)
+function simResults = runRepMarket(fixedps,flexps,gpParms,snapshotFlag)
+global outcomeSpace theoryCentroid;
 
 %create structure to hold outcome from experiments
 expInfo = struct('trueEffect', num2cell(zeros(1,fixedps.nExperiments)), ...
@@ -16,15 +17,32 @@ aReplicaton = 1;
 %% ========== run fixed number of experiments for publication and also replicate
 privRepInfo = expInfo(1);
 nPrivReps = 0;
+exptsRun = zeros(fixedps.nExploreLevels);
 for i=1:fixedps.nExperiments
-    %randomly explore a combination of independent variables
-    iv1 = randi(fixedps.nExploreLevels);
-    iv2 = randi(fixedps.nExploreLevels);
-    expInfo(i)= runExperiment(iv1, iv2, flexps, notAReplication);  
+    if flexps.theory > 0 %we have theory, so let's use it to focus
+        iv1= randi([max(theoryCentroid(1)-1,1) min(theoryCentroid(1)+2,fixedps.nExploreLevels)]);
+        iv2= randi([max(theoryCentroid(2)-1,1) min(theoryCentroid(2)+2,fixedps.nExploreLevels)]);
+    else %randomly explore a combination of independent variables
+        iv1 = randi(fixedps.nExploreLevels);
+        iv2 = randi(fixedps.nExploreLevels);
+    end
+    exptsRun(iv1,iv2) = exptsRun(iv1,iv2) + 1;
+    expInfo(i)= runExperiment(iv1, iv2, flexps, notAReplication);
     if expInfo(i).sigResult  %replicate before publication
         nPrivReps = nPrivReps +1;
         privRepInfo(nPrivReps) = runExperiment(iv1, iv2, flexps, aReplicaton);
     end
+end
+
+if snapshotFlag %on last rep of each condition, draw a snapshot of outcome and experimental space
+    scrsz = get(groot,'ScreenSize');
+    figure('Position',[100 100 scrsz(3)*.25 scrsz(4)*.8])
+    subplot (2,1,1);
+    axis('square');
+    contour(outcomeSpace);
+    subplot (2,1,2);
+    axis('square');
+    contour(exptsRun);
 end
 
 %% ========== analyze results of first set of experiments
