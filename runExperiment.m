@@ -27,10 +27,20 @@ expResults.iv2val = iv2;
 expResults.z = z;
 expResults.bf = bf;
 if parms.bayesian
-    expResults.sigResult = bf > parms.bfcritval;
-else
+    if parms.symmetrical  %bayesian consideration of BF01 and BF10 is a little complicated
+        expResults.sigResult = (bf > parms.bfcritval) | ((1/bf) > parms.bfcritval);
+        if ((bf > parms.bfcritval) && trueEffect) || (((1/bf) > parms.bfcritval) && ~trueEffect)
+           expResults.trueEffect = 1;
+        else 
+           expResults.trueEffect = 0;
+        end 
+    else %bayesian looking for effects is simple
+        expResults.sigResult = bf > parms.bfcritval;
+        expResults.trueEffect = trueEffect;
+    end 
+else  %frequentist statistics are simple
     expResults.sigResult = abs(z)> parms.critval;
+    expResults.trueEffect = trueEffect;
 end
-expResults.trueEffect = trueEffect;
 expResults.finalSample = n;
 expResults.finalBatches = ph;

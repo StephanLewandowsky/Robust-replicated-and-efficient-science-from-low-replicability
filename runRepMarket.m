@@ -18,6 +18,7 @@ aReplicaton = 1;
 privRepInfo = expInfo(1);
 nPrivReps = 0;
 exptsRun = zeros(fixedps.nExploreLevels);
+nTEpres = 0;  %keep track of actual landscape of true effects
 for i=1:fixedps.nExperiments
     if flexps.theory > 0 %we have theory, so let's use it to focus
         iv1= randi([max(theoryCentroid(1)-1,1) min(theoryCentroid(1)+2,fixedps.nExploreLevels)]);
@@ -32,22 +33,29 @@ for i=1:fixedps.nExperiments
         nPrivReps = nPrivReps +1;
         privRepInfo(nPrivReps) = runExperiment(iv1, iv2, flexps, aReplicaton);
     end
+    nTEpres =nTEpres + sum(sum(outcomeSpace));
 end
 
 if snapshotFlag %on last rep of each condition, draw a snapshot of outcome and experimental space
-    scrsz = get(groot,'ScreenSize');
-    figure('Position',[100 100 scrsz(3)*.25 scrsz(4)*.8])
-    subplot (2,1,1);
+    %scrsz = get(groot,'ScreenSize');
+    %figure('Position',[100 100 scrsz(3)*.25 scrsz(4)*.8])
+    figure;
     axis('square');
-    contour(outcomeSpace);
-    subplot (2,1,2);
-    axis('square');
-    contour(exptsRun);
+    caxis([-20,20])
+    contourf(1-outcomeSpace);
+    colormap(bone);
+    %subplot (2,1,2);
+    %axis('square');
+    hold on;
+    %caxis([0,1])
+    contour(1-exptsRun,'r','LineWidth',3);
+    
 end
 
 %% ========== analyze results of first set of experiments
 simResults.typeI = sum(~[expInfo.trueEffect] & [expInfo.sigResult])/sum(~[expInfo.trueEffect]);
 simResults.power = sum([expInfo.trueEffect] & [expInfo.sigResult])/sum([expInfo.trueEffect]);
+simResults.trueEffsPresent = nTEpres / fixedps.nExperiments;
 
 simResults.nTotExptsPrivRep =  fixedps.nExperiments + nPrivReps; %~flexps.fakeit *
 %compute real (i.e., replicated) effects, by considering significance only,

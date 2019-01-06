@@ -5,15 +5,16 @@ global outcomeSpace theoryCentroid;
 
 %% ========== get the citations of 2,000 articles in psychology from 2014 and create output path
 load 'psychcites2014.dat'
-resultsPathName = 'TheoryDrivBayes';
+resultsPathName = 'TheoryBayesSymCent0.1'; %'BayesianExplorResults'; %'standardResults';
 if ~exist(['output/' resultsPathName],'dir')
     mkdir ('output', resultsPathName) %make sure all output goes into dedicated directory
 end
-printflag=1;   %if set to 1, then figures are printed to pdf
+printflag=0;   %if set to 1, then figures are printed to pdf
 
 %%  ==========draw illustrative figure of citation distribution, pareto fit, and
 % decision bound centered on 90th percentile
 h2=histfit(psychcites2014,30,'gp');
+set(gca, 'XLim', [0 100])
 yt = get(gca, 'YTick');
 set(gca, 'YTick', yt, 'ytickLabel', (num2str(yt./numel(psychcites2014),'%.1f\n')))
 hold on
@@ -27,12 +28,24 @@ gpParms = fitdist(psychcites2014,'gp') %#ok<NOPTS>
 decisionBound = gpinv(.9,gpParms.k,gpParms.sigma,gpParms.theta); %stays constant
 citcounts = sort(psychcites2014);
 %plot boundary for various levels of gain
-
+k=0;
 for gain=[1,5,10]
+    k=k+1;
     pRepDecision = makeRepDecision(citcounts, decisionBound, gain);
-    plot(citcounts,pRepDecision*numel(psychcites2014),'-')
+    %add a bit to get it off the axis
+    hl(k)=plot(citcounts,pRepDecision*numel(psychcites2014)+10,'-','LineWidth',2); %#ok<SAGROW>
 end
+vline(decisionBound,'k--');
+annotation('textarrow',[.4 .32],[.35 .35],'String','Threshold')
+annotation('textarrow',[.45 .38],[.25 .14],'String','Pareto fit to observed distribution')
+xlabel('Total number of citations')
+ylabel('Proportion of articles / P(Interest)')
+l1=legend(hl,'1','5', '10', ...
+    'Location','best')
+title(l1,'Gain')
 hold off
+if printflag, print('citesDecisions','-dpdf'); end
+
 
 %% ==========struture of fixed parameters to run this simulation
 fixedps.nExploreLevels = 10;   %number of levels in bivariate exploration space
@@ -45,7 +58,7 @@ fixedps.nPerCond = 1000;        %number of replications per condition of simulat
 % anything initialized to nan here is set below in experimental-condition
 % loop
 flexps.sampleSize = 30;       %n subjects in each experiment before p-hacking
-flexps.sampleSD = 2;          %standard deviation of population
+flexps.sampleSD = 1.5;          %standard deviation of population. Usually 2, but set to 1.5 for Bayesian analysis
 flexps.pHack = nan;           %if 0, no p-hack. Otherwise, add batch of n subjects until significant
 flexps.pHackBatches = 5;      %number of times p-hacking can occur
 flexps.decisionGain = nan;    %gain for replication decision. gain=0 means always replicate
@@ -53,20 +66,22 @@ flexps.interestGain = 5;      %if replic-gain=0, then use this gain to decide if
 flexps.fakeit = 0;            %if 1, then pretend everything is significant
 flexps.critval = 2.;          %z value: use 2 for .05, 2.58 for .01, 3.29 for .001
 flexps.bfcritval = 3;         %use 3 for moderate, 10 for strong, 30 for very strong, 100 for decisive
-                              % BF=3 roughly p=.05; http://imaging.mrc-cbu.cam.ac.uk/statswiki/FAQ/RscaleBayes
+% BF=3 roughly p=.05; http://imaging.mrc-cbu.cam.ac.uk/statswiki/FAQ/RscaleBayes
 flexps.bayesian = 1;          %if 1 then Bayesian t-test and 'bfcritval' will be used, otherwise normal z-test and 'critval'
-flexps.theory = .5;            %if >0, then there is structure in the world, and this value determines overlap between
-                              %theory and the world. If set to 1, theory is perfect.
-                              %If near zero, the theory is grazing in the
-                              %wrong space
+flexps.symmetrical = 1;       %only considered for Bayesian analysis. If 1, then 1/bfcritval will also be 
+%counted towards 'significant' effects (and considered true if H0 is true). 
+flexps.theory = .1;            %if >0, then there is structure in the world, and this value determines overlap between
+%theory and the world. If set to 1, theory is perfect.
+%If near zero, the theory is grazing in the
+%wrong space
 
 %% ========== run replication market experiment
-resultsSim = zeros(16, 10);
+resultsSim = zeros(16, 15);
 avgNTrueResults = 0;
 k=0;
 for fph = [0,1,5,10]
     flexps.pHack = fph;
-    for fpg = [1 5 10]
+    for fpg = [0 1 5 10]
         flexps.decisionGain = fpg;
         k=k+1;
         
@@ -78,20 +93,25 @@ for fph = [0,1,5,10]
             if flexps.theory > 0
                 outcomeSpace = zeros(fixedps.nExploreLevels);
                 centroid = [randi([3 fixedps.nExploreLevels-2]) randi([3 fixedps.nExploreLevels-2])];
-                neff = ceil(fidexps.pH1true*fixedps.nExploreLevels^2) + 1;
-                for j=1:neff
-                    xvaleffs(j) = randi([centroid(1)-1 centroid(1)+2]); %#ok<SAGROW>
-                    yvaleffs(j) = randi([centroid(2)-1 centroid(2)+2]); %#ok<SAGROW>
-                    outcomeSpace(xvaleffs(j),yvaleffs(j))= 1;
+                neff = ceil(fidexps.pH1true*fixedps.nExploreLevels^2);
+                while abs(sum(sum(outcomeSpace))-neff)>1
+                    outcomeSpace = zeros(fixedps.nExploreLevels);
+                    for j=1:neff
+                        xvaleffs(j) = randi([centroid(1)-1 centroid(1)+2]); %#ok<SAGROW>
+                        yvaleffs(j) = randi([centroid(2)-1 centroid(2)+2]); %#ok<SAGROW>
+                        outcomeSpace(xvaleffs(j),yvaleffs(j))= 1;
+                    end
                 end
                 distort = round((1-flexps.theory)*9);
                 theoryCentroid = [randi([max(centroid(1)-distort,1) min(centroid(1)+distort,fixedps.nExploreLevels)]) ...
-                                  randi([max(centroid(2)-distort,1) min(centroid(2)+distort,fixedps.nExploreLevels)])];
+                    randi([max(centroid(2)-distort,1) min(centroid(2)+distort,fixedps.nExploreLevels)])];
             else
                 outcomeSpace = rand(fixedps.nExploreLevels) < fidexps.pH1true;
                 theoryCentroid = nan;
             end
             avgNTrueResults = avgNTrueResults + sum(sum(outcomeSpace));
+            %last argument in next call triggers snapshot display of theory
+            %space
             simResults (i) = runRepMarket(fixedps,flexps,gpParms,i==fixedps.nPerCond); %#ok<SAGROW>
         end
         
@@ -110,15 +130,23 @@ for fph = [0,1,5,10]
         %keep track of results for further analysis
         resultsSim(k,1)=fph;
         resultsSim(k,2)=fpg;
-        resultsSim(k,3:10)=cellMeans([1,2,3,5,6,10,11,12]);
+        resultsSim(k,3:15)=cellMeans;
         
     end
 end
 avgNTrueResults / (k*fixedps.nPerCond)  %#ok<NOPTS>
-tx=array2table(resultsSim,'VariableNames',{'phack','gain','typeI','power',...
-    'nTotExptsPrivRep','nPrivRealInterestEffs',...
-    'nPrivRealInterestTrueEffs','nTotExptsPubRep',...
-    'nPubRealInterestEffs','nPubRealInterestTrueEffs'}) %#ok<NOPTS>
+tx=array2table(resultsSim,'VariableNames',{'phack','gain', ...
+    'typeI','power', ...
+    'trueEffsPresent', ...
+    'nTotExptsPrivRep','nPrivRealEffs', ...
+    'nPrivRealInterestEffs', ...
+    'nPrivRealInterestTrueEffs', ...
+    'typeIRep', ...
+    'powerRep', ...
+    'nAppntEffs', ...
+    'nTotExptsPubRep', ...
+    'nPubRealInterestEffs', ...
+    'nPubRealInterestTrueEffs'}) %#ok<NOPTS>
 
 %% show effects of error rates in initial exploration (before replication)
 % this shows effects of p-hacking
