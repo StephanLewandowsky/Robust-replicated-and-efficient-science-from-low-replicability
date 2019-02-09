@@ -1,4 +1,5 @@
-function runMetaExperiment(fixedps)
+function runMetaExperiment (fixedps, decisionBound, gpParms, ...
+                        resultsPathName, bayesFlag, symmFlag, fakeFlag, theory)
 global outcomeSpace theoryCentroid;
 
 %% ========== structure of free (flex) parameters to govern behavior of simulation
@@ -13,7 +14,6 @@ end
 flexps.symmetrical = symmFlag;%only considered for Bayesian analysis. If 1, then 1/bfcritval will also be 
 %counted towards 'significant' effects (and considered true if H0 is true). 
 flexps.sampleSize = 30;       %n subjects in each experiment before p-hacking
-flexps.sampleSD = sampleSD;   %standard deviation of population. Usually 2, but set to 1.5 for Bayesian analysis
 flexps.pHack = nan;           %if 0, no p-hack. Otherwise, add batch of n subjects until significant
 flexps.pHackBatches = 5;      %number of times p-hacking can occur
 flexps.decisionGain = nan;    %gain for replication decision. gain=0 means always replicate
@@ -44,7 +44,7 @@ for fph = [0,1,5,10]
             if flexps.theory > 0
                 outcomeSpace = zeros(fixedps.nExploreLevels);
                 centroid = [randi([3 fixedps.nExploreLevels-2]) randi([3 fixedps.nExploreLevels-2])];
-                neff = ceil(fidexps.pH1true*fixedps.nExploreLevels^2);
+                neff = ceil(fixedps.pH1true*fixedps.nExploreLevels^2);
                 while abs(sum(sum(outcomeSpace))-neff)>1
                     outcomeSpace = zeros(fixedps.nExploreLevels);
                     for j=1:neff
@@ -57,7 +57,7 @@ for fph = [0,1,5,10]
                 theoryCentroid = [randi([max(centroid(1)-distort,1) min(centroid(1)+distort,fixedps.nExploreLevels)]) ...
                     randi([max(centroid(2)-distort,1) min(centroid(2)+distort,fixedps.nExploreLevels)])];
             else
-                outcomeSpace = rand(fixedps.nExploreLevels) < fidexps.pH1true;
+                outcomeSpace = rand(fixedps.nExploreLevels) < fixedps.pH1true;
                 theoryCentroid = nan;
             end
             avgNTrueResults = avgNTrueResults + sum(sum(outcomeSpace));

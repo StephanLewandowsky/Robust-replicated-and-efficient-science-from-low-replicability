@@ -4,7 +4,7 @@ clearvars                     %get rid of variables from before
 
 %% ==========struture of fixed parameters to run any simulation
 fixedps.nExploreLevels = 10;   %number of levels in bivariate exploration space
-fidexps.pH1true = .09;         %Dreber15 estimate = .09. If set to zero: 'bemscape'
+fixedps.pH1true = .09;         %Dreber15 estimate = .09. If set to zero: 'bemscape'
 fixedps.nExperiments = 100;
 fixedps.nPerCond = 100;        %number of simulation runs per condition of simulation
 opdir = 'output/';
@@ -14,7 +14,7 @@ printflag=1;                   %if set to 1, then figures are printed to pdf
 %             a different output file. Each of these can be a vector
 LI_boundPertile =.9;  %threshold for citations being interesting
 LI_bayesFlag = 0;     %if 1 then Bayesian t-test and 'bfcritval' will be used, otherwise normal z-test and 'critval'
-LI_symmFlag = 1;      %only considered for Bayesian analysis. If 1, then 1/bfcritval will also be
+LI_symmFlag = 0;      %only considered for Bayesian analysis. If 1, then 1/bfcritval will also be
 %counted towards 'significant' effects (and considered true if H0 is true).
 LI_fakeFlag = 0;      %if 1, then pretend everything is significant
 LI_theory = .0;       %if >0, then there is structure in the world, and this value determines overlap between
