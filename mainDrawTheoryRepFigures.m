@@ -41,14 +41,14 @@ ul = max(T{1}.nTotExptsPrivRep+5);
 ll = min([90, (T{1}.nTotExptsPubRep-2)']);
 axis([-.5 10.5 ll ul])
 for i=1:length(resultsPathNames)
-    [hpriv,hpub]=plotPubvPriv(gcf, T{i},{'nTotExptsPrivRep','nTotExptsPubRep'},shadings(i));
+    [hpriv,hpub]=plotPubvPriv(gcf, T{i},'gain', {'nTotExptsPrivRep','nTotExptsPubRep'},shadings(i));
 end
 p100=refline([0 100]);
 p100.Color='black';
 p100.LineStyle='--';
 p100.Marker='none';
 annotation('textarrow',[.3 .24],[.165 .19],'String','First round')
-xlabel('Gain')
+xlabel('Temperature')
 ylabel('Total number of experiments conducted')
 lh=[hpriv hpub];
 legend(lh,'Private replication','Public replication', ...
@@ -58,7 +58,7 @@ subplot(1,2,2) %now plot knowledge gain
 ul2 = max([10, max([T{1}.nPrivRealInterestTrueEffs T{1}.nPubRealInterestTrueEffs])+1]);
 axis([-.5 10.5 0 ul2])
 for i=1:length(resultsPathNames)
-    [hpriv,hpub]=plotPubvPriv(gcf, T{i},{'nPrivRealInterestTrueEffs', 'nPubRealInterestTrueEffs'},shadings(i));
+    [hpriv,hpub]=plotPubvPriv(gcf, T{i}, 'gain', {'nPrivRealInterestTrueEffs', 'nPubRealInterestTrueEffs'},shadings(i));
     mte(i) = mean(T{i}.trueEffsPresent(T{i}.gain>0));
 end
 if ~symmetryflag
@@ -68,8 +68,9 @@ if ~symmetryflag
     pmaxl.Marker='none';
     annotation('textarrow',[.69 .62],[.85 .79],'String','Max discoverable')
 end
-xlabel('Gain')
-ylabel('Number of interesting true effects revealed')
+xlabel('Temperature')
+ylabel('Number of interesting truths (effects or non-effects) revealed')
+%ylabel('Number of interesting true effects revealed')
 
 
 if printflag, print(['output/' figurePathName '/' figurePathName  '.pdf'],'-dpdf', '-bestfit' ); end

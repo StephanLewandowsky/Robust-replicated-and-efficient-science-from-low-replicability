@@ -69,12 +69,12 @@ if flexps.decisionGain==0
 else
     dG = flexps.decisionGain;
 end
-simResults.nPrivRealInterestEffs = sum(rand < makeRepDecision(paretos4interest, fixedps.decBnd, dG));
+simResults.nPrivRealInterestEffs = sum(rand < makeRepDecision(paretos4interest, flexps.decBnd, dG));
 %now do it for true effects
 nPrivRealTrueEffs = sum([privRepInfo.trueEffect] & [privRepInfo.sigResult]);
 paretos4interest2 = gprnd(gpParms.k,gpParms.sigma,gpParms.theta,1,nPrivRealTrueEffs);
 %apply interest criterion for privately replicated real & true effects
-simResults.nPrivRealInterestTrueEffs = sum(rand < makeRepDecision(paretos4interest2, fixedps.decBnd, dG));
+simResults.nPrivRealInterestTrueEffs = sum(rand < makeRepDecision(paretos4interest2, flexps.decBnd, dG));
 
 
 
@@ -87,7 +87,7 @@ paretos = gprnd(gpParms.k,gpParms.sigma,gpParms.theta,1,length(appntEffs));
 % now decide what to replicate, and then replicate....
 nPubReps = 0;
 for i=1:length(appntEffs)
-    if rand < makeRepDecision(paretos(i), fixedps.decBnd, flexps.decisionGain)
+    if rand < makeRepDecision(paretos(i), flexps.decBnd, flexps.decisionGain)
         nPubReps = nPubReps +1;
         pubRepInfo(nPubReps) = runExperiment(expInfo(appntEffs(i)).iv1val, expInfo(appntEffs(i)).iv2val, flexps, aReplicaton);
     end
@@ -102,14 +102,14 @@ simResults.nTotExptsPubRep = fixedps.nExperiments + nPubReps; %~flexps.fakeit *
 %after replication, count significance as being real
 if flexps.decisionGain==0
     paretos4interest3 = gprnd(gpParms.k,gpParms.sigma,gpParms.theta,1,sum([pubRepInfo.sigResult]));
-    simResults.nPubRealInterestEffs = sum(rand < makeRepDecision(paretos4interest3, fixedps.decBnd, flexps.interestGain));
+    simResults.nPubRealInterestEffs = sum(rand < makeRepDecision(paretos4interest3, flexps.decBnd, flexps.interestGain));
 else
     simResults.nPubRealInterestEffs = sum([pubRepInfo.sigResult]);
 end
 %but also do it for true effects
 if flexps.decisionGain==0
     paretos4interest4 = gprnd(gpParms.k,gpParms.sigma,gpParms.theta,1,sum([pubRepInfo.trueEffect] & [pubRepInfo.sigResult]));
-    simResults.nPubRealInterestTrueEffs = sum(rand < makeRepDecision(paretos4interest4, fixedps.decBnd, flexps.interestGain));
+    simResults.nPubRealInterestTrueEffs = sum(rand < makeRepDecision(paretos4interest4, flexps.decBnd, flexps.interestGain));
 else
     simResults.nPubRealInterestTrueEffs = sum([pubRepInfo.trueEffect] & [pubRepInfo.sigResult]);
 end
