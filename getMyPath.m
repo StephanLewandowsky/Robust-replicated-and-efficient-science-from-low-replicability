@@ -5,10 +5,10 @@ function rpn =getMyPath(boundPertile, bayesFlag, symmFlag, fakeFlag, theory, npe
 if theory>0
     ExplTheo = ['Theo' num2str(theory)];
 else
-    ExplTheo = 'Expl';
+    ExplTheo = 'Discov';
 end
 if symmFlag
-    symmetry = 'Symm';
+    symmetry = 'Symmet';
 else
     symmetry = '';
 end
@@ -22,4 +22,4 @@ if bayesFlag
 else
     freqBayes = 'Freq';
 end
-rpn=[freqBayes ExplTheo symmetry fake 'Ptile' num2str(boundPertile) 'N' num2str(npercond)];
+rpn=[freqBayes ExplTheo symmetry fake 'Citptile' num2str(boundPertile) 'N' num2str(npercond)];

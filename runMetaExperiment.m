@@ -1,5 +1,6 @@
 function runMetaExperiment (fixedps, decisionBound, gpParms, ...
-                        resultsPathName, bayesFlag, symmFlag, fakeFlag, theory)
+                        resultsPathName, bayesFlag, symmFlag, ...
+                        fakeFlag, theory, printflag)
 global outcomeSpace theoryCentroid;
 
 %% ========== structure of free (flex) parameters to govern behavior of simulation
@@ -137,7 +138,7 @@ for g = [1 10]
     p100.LineStyle='--';
     p100.Marker='none';
     
-    title(['g=' num2str(g)])
+    title(['temp=' num2str(g)])
     legend('Private replication','Public replication','Location','east')
     hold off
     if printflag, print(['output/' resultsPathName '/expNum_g' num2str(g)],'-dpdf', '-bestfit'); end
@@ -157,7 +158,7 @@ for g = [1 10]
     
     plot(g5.phack,g5.nPrivRealInterestEffs,'r--o','MarkerFaceColor','red')
     plot(g5.phack,g5.nPubRealInterestEffs,'b--o','MarkerFaceColor',[0.5843    0.8157    0.9882])
-    title(['g=' num2str(g)])
+    title(['temp=' num2str(g)])
     p100=refline([0 avgNTrueResults / (k*fixedps.nPerCond)]);
     p100.Color='black';
     p100.LineStyle='--';
