@@ -1,3 +1,3 @@
-# replication_market
+# Robust, replicated, and efficient science from low replicability
 
-Philosophy JRC review: lots of interesting simulation-based papers.
+by Lewandowsky & Oberauer. All simulation code and raw simulation output.
