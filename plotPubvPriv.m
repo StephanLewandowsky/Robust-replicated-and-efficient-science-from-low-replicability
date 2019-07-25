@@ -14,10 +14,18 @@ for g = gains'
     again = T(table2array(T(:,tvarname))==g,:);
     %plot(again.gain,table2array(again(:,varnams{1})),'ro','MarkerFaceColor','red')
     %plot(again.gain,table2array(again(:,varnams{2})),'bo','MarkerFaceColor','blue')
-    privRepMean(k)=mean(table2array(again(:,varnams{1})));
+    if ~isempty(varnams{1})
+        privRepMean(k)=mean(table2array(again(:,varnams{1})));
+    else 
+        privRepMean(k) = nan;
+    end
     pubRepMean(k)=mean(table2array(again(:,varnams{2})));
     if length(varnams)>2
-        privIntMean(k) = mean(table2array(again(:,varnams{3})));
+        if ~isnan(privRepMean(k))
+            privIntMean(k) = mean(table2array(again(:,varnams{3})));
+        else
+            privIntMean(k) = nan;
+        end
         pubIntMean(k) = mean(table2array(again(:,varnams{4})));
     end
 end
@@ -29,3 +37,4 @@ if length(varnams)>2
     hpriv2=plot(gains,privIntMean,'r--','LineWidth',shading);
     hpub2=plot(gains,pubIntMean,'b--','LineWidth',shading);
 end
+

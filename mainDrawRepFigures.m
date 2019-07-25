@@ -4,11 +4,11 @@ clearvars                     %get rid of variables from before
 %global outcomeSpace theoryCentroid;
 
 %% ========== set up input for figures ====================================
-printflag=1;   %if set to 1, then figures are printed to pdf
+printflag=0;   %if set to 1, then figures are printed to pdf
 
 %create file name and indicate panel labels
-bemscapeFlag = 1;      %special treatment if there are no effects present
-panelLabel   =['c' 'd'];
+bemscapeFlag = 0;      %special treatment if there are no effects present
+panelLabel   =['a' 'b'];
 boundPertile = 0.9;
 bayesFlag    = 0;
 symmFlag     = 0;
@@ -130,11 +130,16 @@ ylabel('Total number of experiments conducted')
 subplot(1,2,2) %now plot knowledge gain
 ul2 = max([10, max([T.nPrivRealInterestTrueEffs T.nPubRealInterestTrueEffs])+1]);
 axis([-.5 10.5 0 ul2])
-[hpriv,hpub,hpriv2,hpub2]=plotPubvPriv(gcf, T,'gain',{'nPrivRealInterestTrueEffs', ...
-    'nPubRealInterestTrueEffs', ...
-    'nPrivRealInterestEffs',...
-    'nPubRealInterestEffs'},linethickness);
-
+if fakeFlag  %do not print anything private (fraudsters wouldn't care)
+    [hpriv,hpub,hpriv2,hpub2]=plotPubvPriv(gcf, T,'gain',{'', ...
+        'nPubRealInterestTrueEffs', '',...
+        'nPubRealInterestEffs'},linethickness);
+else
+    [hpriv,hpub,hpriv2,hpub2]=plotPubvPriv(gcf, T,'gain',{'nPrivRealInterestTrueEffs', ...
+        'nPubRealInterestTrueEffs', ...
+        'nPrivRealInterestEffs',...
+        'nPubRealInterestEffs'},linethickness);
+end
 panel = text(-3, ul2+(ul2*.05), panelLabel(2));
 panel.FontSize = 14;
 panel.FontWeight = 'bold';
@@ -153,12 +158,19 @@ if ~bemscapeFlag
 end
 xlabel('Temperature')
 ylabel('Number of interesting effects discovered')
-lh=[hpriv hpub hpriv2 hpub2];
-legend(lh,'Private replication true','Public replication true', ...
-    ['Private replication' 10 'significant'], ...
-    ['Public replication' 10 'significant'], ...
-    'Location',[0.5944 0.4 0.2875 0.16548])
 
+if fakeFlag
+    lh=[hpub hpub2];
+    legend(lh,'Public replication true', ...
+        ['Public replication' 10 'significant'], ...
+        'Location',[0.5944 0.4 0.2875 0.16548])
+else
+    lh=[hpriv hpub hpriv2 hpub2];
+    legend(lh,'Private replication true','Public replication true', ...
+        ['Private replication' 10 'significant'], ...
+        ['Public replication' 10 'significant'], ...
+        'Location',[0.5944 0.4 0.2875 0.16548])
+end
 
 set(mfh,'Units','Inches');
 pos = get(mfh,'Position');

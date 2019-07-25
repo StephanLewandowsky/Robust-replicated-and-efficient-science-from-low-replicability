@@ -1,6 +1,7 @@
 %%  ==========draw illustrative figure of citation distribution, pareto fit, and
 function [decisionBound, gpParms]=plotParetoCites(boundPertile,psychcites2014,printflag,opdir)
 
+figure;
 h2=histfit(psychcites2014,30,'gp');
 set(gca, 'XLim', [0 100])
 yt = get(gca, 'YTick');
