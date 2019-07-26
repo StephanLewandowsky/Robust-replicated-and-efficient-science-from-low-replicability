@@ -1,5 +1,6 @@
 function runMetaExperiment (fixedps, decisionBound, gpParms, ...
-                        resultsPathName, bayesFlag, symmFlag, ...
+                        resultsPathName, alpha, power, ...
+                        bayesFlag, symmFlag, ...
                         fakeFlag, theory, printflag)
 global outcomeSpace theoryCentroid;
 
@@ -14,13 +15,39 @@ else
 end
 flexps.symmetrical = symmFlag;%only considered for Bayesian analysis. If 1, then 1/bfcritval will also be 
 %counted towards 'significant' effects (and considered true if H0 is true). 
-flexps.sampleSize = 30;       %n subjects in each experiment before p-hacking
+
+switch power                 %n subjects in each experiment before p-hacking
+    case .8                  %determined by GPower for one-sample t with SD=2
+        flexps.sampleSize = 34;       
+    case .7
+        flexps.sampleSize = 27;       
+    case .6
+        flexps.sampleSize = 22;       
+    case .5
+        flexps.sampleSize = 18;       
+end 
 flexps.pHack = nan;           %if 0, no p-hack. Otherwise, add batch of n subjects until significant
 flexps.pHackBatches = 5;      %number of times p-hacking can occur
 flexps.decisionGain = nan;    %gain for replication decision. gain=0 means always replicate
 flexps.interestGain = 5;      %if replic-gain=0, then use this gain to decide if interesting
 flexps.fakeit = fakeFlag;            %if 1, then pretend everything is significant
-flexps.critval = 2.;          %z value: use 2 for .05, 2.58 for .01, 3.29 for .001
+
+%critical t values depend on sample size now
+ttable =[
+ 2.109816 2.079614 2.055529 2.034515;
+ 2.898231 2.831360 2.778715 2.733277;
+ 3.965126 3.819277 3.706612 3.610913;
+ 1.333379 1.323188 1.314972 1.307737];
+switch alpha                  
+    case .05
+        flexps.critval = ttable(1,(power*10)-4);
+    case .01
+        flexps.critval = ttable(2,(power*10)-4);
+    case .001
+        flexps.critval = ttable(3,(power*10)-4);
+    case .2
+        flexps.critval = ttable(4,(power*10)-4);       % For p-hacking (effective alpha=.2)
+end
 flexps.bfcritval = 3;         %use 3 for moderate, 10 for strong, 30 for very strong, 100 for decisive
 % BF=3 roughly p=.05; http://imaging.mrc-cbu.cam.ac.uk/statswiki/FAQ/RscaleBayes
 flexps.theory = theory;            %if >0, then there is structure in the world, and this value determines overlap between
@@ -49,8 +76,8 @@ for fph = [0,1,5,10]
                 while abs(sum(sum(outcomeSpace))-neff)>1
                     outcomeSpace = zeros(fixedps.nExploreLevels);
                     for j=1:neff
-                        xvaleffs(j) = randi([centroid(1)-1 centroid(1)+2]); %#ok<SAGROW>
-                        yvaleffs(j) = randi([centroid(2)-1 centroid(2)+2]); %#ok<SAGROW>
+                        xvaleffs(j) = randi([centroid(1)-1 centroid(1)+2]); 
+                        yvaleffs(j) = randi([centroid(2)-1 centroid(2)+2]); 
                         outcomeSpace(xvaleffs(j),yvaleffs(j))= 1;
                     end
                 end

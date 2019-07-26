@@ -15,12 +15,14 @@ symmFlag     = 0;
 fakeFlag     = 0;
 theory       = 0;
 nPerCond     = 1000;
+alpha        = .05;
+power        = .8;
 
 if bemscapeFlag
     resultsPathName = 'bemscapeResultsN1000';
     fn = 'output/bemscapeResultsN1000/bemscapeResultsN1000.csv';
 else
-    resultsPathName = getMyPath(boundPertile, bayesFlag, symmFlag, ...
+    resultsPathName = getMyPath(boundPertile, alpha, power, bayesFlag, symmFlag, ...
         fakeFlag, theory, nPerCond);
     fn = ['output/' resultsPathName '/' resultsPathName 'N' num2str(nPerCond) '.xlsx'];
 end

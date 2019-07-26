@@ -15,12 +15,14 @@ bayesFlag    = 1;
 symmFlag     = 1;
 fakeFlag     = 0;
 nPerCond     = 1000;
+alpha        = .05;
+power        = .8;
 
 resultsPathNames=cell(1,3);
 k=0;
 for theory=[1 .5 .1]
     k=k+1;
-    tpath = getMyPath(boundPertile, bayesFlag, symmFlag, ...
+    tpath = getMyPath(boundPertile, alpha, power, bayesFlag, symmFlag, ...
         fakeFlag, theory, nPerCond);
     resultsPathNames{k} = ['output/' tpath  '/' tpath  'N' num2str(nPerCond) '.xlsx']; 
 end
