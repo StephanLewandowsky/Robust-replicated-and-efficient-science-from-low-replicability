@@ -79,7 +79,8 @@ if ~symmFlag
     pmaxl.Color='black';
     pmaxl.LineStyle='--';
     pmaxl.Marker='none';
-    annotation('textarrow',[.69 .62],[.85 .79],'String','Max discoverable')
+    annotation('textarrow',[0.668928571428571 0.626071428571429],...
+    [0.843333333333333 0.734761904761905],'String','Max discoverable')
 end
 xlabel('Temperature')
 if symmFlag

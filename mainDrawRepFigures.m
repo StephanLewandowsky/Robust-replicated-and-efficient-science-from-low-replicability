@@ -8,7 +8,7 @@ clearvars                     %get rid of variables from before
 printflag=1;   %if set to 1, then figures are printed to pdf
 
 %create file name and indicate panel labels
-bemscapeFlag = 1;      %special treatment if there are no effects present
+bemscapeFlag = 0;      %special treatment if there are no effects present
 boundPertile = 0.9;
 bayesFlag    = 0;
 symmFlag     = 0;
