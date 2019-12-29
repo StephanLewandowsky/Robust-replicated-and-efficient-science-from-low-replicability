@@ -91,7 +91,7 @@ for fph = [0,1,5,10]
             avgNTrueResults = avgNTrueResults + sum(sum(outcomeSpace));
             %last argument in next call triggers snapshot display of theory
             %space
-            simResults (i) = runRepMarket(fixedps,flexps,gpParms,i==fixedps.nPerCond); %#ok<SAGROW>
+            simResults(i) = runRepMarket(fixedps,flexps,gpParms,i==fixedps.nPerCond); %#ok<SAGROW>
         end
         
         %print results for that cell

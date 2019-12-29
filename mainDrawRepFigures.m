@@ -2,7 +2,6 @@
 % updated July 2019
 close all                     %close all figures
 clearvars                     %get rid of variables from before
-%global outcomeSpace theoryCentroid;
 
 %% ========== set up input for figures ====================================
 printflag=1;   %if set to 1, then figures are printed to pdf
@@ -15,7 +14,7 @@ symmFlag     = 0;
 fakeFlag     = 0;
 theory       = 0;
 nPerCond     = 1000;
-alpha        = .05;
+alpha        = .2;
 power        = .8;
 panelLabel   =['a' 'b'];   %depends on analysis and/or power
 
@@ -103,7 +102,7 @@ linethickness = 0.5; %will be multiplied by 3 in function plotPubvPriv
 mfh=figure;
 
 subplot(1,2,1); %first plot number of experiments
-ul = 115; %can be set by hand to force same range in all panels max(T.nTotExptsPrivRep+2);
+ul = 130; %can be set by hand to force same range in all panels max(T.nTotExptsPrivRep+2);
 ll = min([95, (T.nTotExptsPubRep-2)']);
 axis([-.5 10.5 ll ul])
 [hpriv, hpub]=plotPubvPriv(gcf, T, 'gain', {'nTotExptsPrivRep','nTotExptsPubRep'},linethickness);
@@ -124,7 +123,7 @@ t.FontSize = 12;
 
 lh1=[hpriv hpub];
 legend(lh1,'Private replication ','Public replication ', ...
-    'Location',[0.17501 0.6 0.24464 0.086905])
+    'Location',[0.17501 0.5 0.24464 0.086905])
 
 xlabel('Temperature')
 ylabel('Total number of experiments conducted')

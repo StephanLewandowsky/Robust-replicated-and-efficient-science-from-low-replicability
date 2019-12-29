@@ -8,18 +8,20 @@ if parms.fakeit && ~repFlag
     z = 5;
     bf = 100; %make it a decisive Bayes factor if we are faking things
 else
-    % frequentist z and Bayes factor
+    % frequentist "z" (actually t) and Bayes factor
     z = mean(data)/(std(data)/sqrt(parms.sampleSize));
     bf = t1smpbf(z,parms.sampleSize);
 end
 n = parms.sampleSize;
 ph = 0;
-while parms.pHack && (abs(z) < 2) && (ph < parms.pHackBatches)  %if we (have to) p-hack, we do this now...
+tcritval = parms.critval; %begin with critical value for experimental sample size
+while parms.pHack && (abs(z) < tcritval) && (ph < parms.pHackBatches)  %if we (have to) p-hack, we do this now...
     data = [data randn(1,parms.pHack)*parms.sampleSD+trueEffect]; %#ok<AGROW>
     n = n + parms.pHack;
     z = mean(data)/(std(data)/sqrt(n));
     bf = t1smpbf(z,n);
     ph = ph + 1;
+    tcritval = CritT(.05,n-1,'two'); %update critical value as sample grows, using silly table-lookup to avoid use of toolbox
 end
 
 expResults.iv1val = iv1;

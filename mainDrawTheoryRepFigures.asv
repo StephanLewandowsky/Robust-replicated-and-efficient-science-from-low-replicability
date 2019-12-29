@@ -11,8 +11,8 @@ shadings=[1 .5 .1];   %graphical representation of rho
 figdir = 'C:/Users/Lewan/Documents/Papers Written/Replication market/';
 panelLabel   =['a' 'b'];
 boundPertile = 0.9;
-bayesFlag    = 1;
-symmFlag     = 1;
+bayesFlag    = 0;
+symmFlag     = 0;
 fakeFlag     = 0;
 nPerCond     = 1000;
 alpha        = .05;
@@ -79,8 +79,8 @@ if ~symmFlag
     pmaxl.Color='black';
     pmaxl.LineStyle='--';
     pmaxl.Marker='none';
-    annotation('textarrow',[0.668928571428571 0.6375],...
-    [0.843333333333333 0.736666666666667],'String','Max discoverable');
+    annotation('textarrow',[0.668928571428571 0.626071428571429],...
+    [0.843333333333333 0.734761904761905],'String','Max discoverable')
 end
 xlabel('Temperature')
 if symmFlag

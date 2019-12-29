@@ -1,4 +1,5 @@
-%% replication market, August 2018 -- written by Stephan Lewandowsky
+%% replication market, August 2018 - December 2019 
+% -- written by Stephan Lewandowsky
 close all                     %close all figures
 clearvars                     %get rid of variables from before
 
@@ -8,21 +9,21 @@ fixedps.pH1true = .09;         %Dreber15 estimate = .09. If set to zero: 'bemsca
 fixedps.nExperiments = 100;
 fixedps.nPerCond = 1000;       %number of simulation runs per condition of simulation
 opdir = 'output/';
-printflag=1;                   %if set to 1, then figures are printed to pdf
+printflag=0;                   %if set to 1, then figures are printed to pdf
 
 %% ===========define meta parameters for a range of simulations, each with
-%             a different output file. Each of these can be a vector
+%             a different output file. 
 % columns are: per'tile bayesflag symmetry fake theory alpha power
 conds=[
-.9 0 0 0 0 .05 .8;
-.9 0 0 0 0 .2 .8;
-.9 0 0 0 0 .05 .7;
-.9 0 0 0 0 .05 .6;
-.9 0 0 0 0 .05 .5;
-.9 1 0 0 0 .05 .8;
-.9 0 0 0 0.1 .05 .8;
-.9 1 0 0 0.1 .05 .8;
-.9 0 0 0 0.5 .05 .8;
+% .9 0 0 0 0 .05 .8;
+% .9 0 0 0 0 .2 .8;
+% .9 0 0 0 0 .05 .7;
+% .9 0 0 0 0 .05 .6;
+% .9 0 0 0 0 .05 .5;
+% .9 1 0 0 0 .05 .8;
+% .9 0 0 0 0.1 .05 .8;
+% .9 1 0 0 0.1 .05 .8;
+% .9 0 0 0 0.5 .05 .8;
 .9 1 0 0 0.5 .05 .8;
 .9 0 0 0 1.0 .05 .8;
 .9 1 0 0 1.0 .05 .8;
@@ -30,10 +31,11 @@ conds=[
 .9 1 1 0 0.5 .05 .8;
 .9 1 1 0 1.0 .05 .8;
 .9 0 0 1 0 .05 .8;
-.7 0 0 0 0 .05 .8;
-.5 0 0 0 0 .05 .8;
-.3 0 0 0 0 .05 .8;
-.1 0 0 0 0 .05 .8];
+% .7 0 0 0 0 .05 .8;
+% .5 0 0 0 0 .05 .8;
+% .3 0 0 0 0 .05 .8;
+% .1 0 0 0 0 .05 .8
+];
 
 howmanytorun = size(conds,1);  %how many of the meta experiments in the design to run?
 

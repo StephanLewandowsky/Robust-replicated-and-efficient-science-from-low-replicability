@@ -1,0 +1,5 @@
+output/_results first submission Nature Comms/
+output/_results pre meta experiment restructure/
+output/_results pre production Nature Comms/
+*.msg
+.Rhistory
